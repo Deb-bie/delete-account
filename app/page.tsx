@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const { signInWithEmail, signInWithGoogle } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
   // const redirect = searchParams.get('redirect') || '/';
   const redirect = '/delete-account';
 
