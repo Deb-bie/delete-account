@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/components/AuthContext';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,7 +13,8 @@ export default function LoginPage() {
   const { signInWithEmail, signInWithGoogle } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/';
+  // const redirect = searchParams.get('redirect') || '/';
+  const redirect = '/delete-account';
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +23,7 @@ export default function LoginPage() {
 
     try {
       await signInWithEmail(email, password);
+      console.log(`redirect: ${redirect}`)
       router.push(redirect);
     } catch (err: any) {
       setError(err.message || 'Failed to sign in');
@@ -179,6 +182,8 @@ export default function LoginPage() {
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
             </form>
+
+           
           </div>
         </div>
 
