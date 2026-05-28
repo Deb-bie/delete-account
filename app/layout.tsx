@@ -1,10 +1,12 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { AuthProvider } from '@/components/AuthContext'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
-  title: 'Account Management',
-  description: 'Manage your account settings',
+  title: 'mySkiin – Your Personal Skincare Companion',
+  description: 'Track your skincare routine, discover the right products, and understand your skin with mySkiin.',
 }
 
 export default function RootLayout({
@@ -16,7 +18,11 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          {children}
+          <Navbar />
+          <main>
+            {children}
+          </main>
+          <Footer />
         </AuthProvider>
       </body>
     </html>
