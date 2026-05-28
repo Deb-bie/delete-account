@@ -1,206 +1,233 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuth } from '@/components/AuthContext';
 import Link from 'next/link';
 
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { signInWithEmail, signInWithGoogle } = useAuth();
-  const router = useRouter();
-  // const searchParams = useSearchParams();
-  // const redirect = searchParams.get('redirect') || '/';
-  const redirect = '/delete-account';
+// ── Replace these with your actual store URLs ──────────────────────────────
+const APP_STORE_URL = '#'; // e.g. https://apps.apple.com/app/myskiin/id...
+const PLAY_STORE_URL = '#'; // e.g. https://play.google.com/store/apps/details?id=...
+// ─────────────────────────────────────────────────────────────────────────
 
-  const handleEmailSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+const features = [
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+    ),
+    title: 'Routine Tracking',
+    description: 'Log your morning and evening skincare routines. Track what you use, when, and how your skin responds over time.',
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      </svg>
+    ),
+    title: 'Product Discovery',
+    description: 'Search and explore skincare products. See ingredient breakdowns and find what works for your unique skin type.',
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    ),
+    title: 'Skin Progress',
+    description: 'Visualise your skin journey with progress tracking. Identify patterns, triggers, and the products that make a real difference.',
+  },
+  {
+    icon: (
+      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+      </svg>
+    ),
+    title: 'AI Skin Assistant',
+    description: 'Get personalised skincare guidance from our AI chatbot — ask questions, get routine tips, and understand your ingredients.',
+  },
+];
 
-    try {
-      await signInWithEmail(email, password);
-      console.log(`redirect: ${redirect}`)
-      router.push(redirect);
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign in');
-    } finally {
-      setLoading(false);
-    }
-  };
+// ── Store badge buttons ────────────────────────────────────────────────────
 
-  const handleGoogleSignIn = async () => {
-    setError('');
-    setLoading(true);
-
-    try {
-      await signInWithGoogle();
-      router.push(redirect);
-    } catch (err: any) {
-      setError(err.message || 'Failed to sign in with Google');
-    } finally {
-      setLoading(false);
-    }
-  };
-
+function AppStoreBadge({ className = '' }: { className?: string }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-stone-50 to-zinc-100 flex items-center justify-center p-6">
+    <a
+      href={APP_STORE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`inline-flex items-center gap-3 px-5 py-3 rounded-xl bg-black text-white hover:bg-zinc-800 transition-all duration-200 shadow-lg shadow-black/20 hover:shadow-xl group ${className}`}
+    >
+      {/* Apple logo */}
+      <svg className="w-6 h-6 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+      </svg>
+      <div className="text-left leading-tight">
+        <p className="text-[10px] text-white/70 font-normal">Download on the</p>
+        <p className="text-sm font-semibold">App Store</p>
+      </div>
+    </a>
+  );
+}
+
+function PlayStoreBadge({ className = '' }: { className?: string }) {
+  return (
+    <a
+      href={PLAY_STORE_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`inline-flex items-center gap-3 px-5 py-3 rounded-xl bg-black text-white hover:bg-zinc-800 transition-all duration-200 shadow-lg shadow-black/20 hover:shadow-xl group ${className}`}
+    >
+      {/* Google Play triangle logo */}
+      <svg className="w-6 h-6 flex-shrink-0" viewBox="0 0 24 24" fill="none">
+        <path d="M3.18 23.76c.3.17.64.24.99.2L15.5 12 4.17.04a1.83 1.83 0 00-.99.2C2.46.67 2 1.42 2 2.28v19.44c0 .86.46 1.61 1.18 2.04z" fill="#EA4335"/>
+        <path d="M20.23 10.21L17.07 8.4 13.4 12l3.67 3.6 3.16-1.8a2.06 2.06 0 000-3.59z" fill="#FBBC05"/>
+        <path d="M4.17.04L15.5 12 17.07 8.4 5.54.17A2.1 2.1 0 004.17.04z" fill="#4285F4"/>
+        <path d="M4.17 23.96a2.1 2.1 0 001.37-.13l11.53-8.23L15.5 12 4.17 23.96z" fill="#34A853"/>
+      </svg>
+      <div className="text-left leading-tight">
+        <p className="text-[10px] text-white/70 font-normal">Get it on</p>
+        <p className="text-sm font-semibold">Google Play</p>
+      </div>
+    </a>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+
+export default function HomePage() {
+  return (
+    <>
       <style jsx global>{`
         @import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@300;400;600;700&family=DM+Sans:wght@400;500;600&display=swap');
-        
-        body {
-          font-family: 'DM Sans', sans-serif;
-        }
-        
-        .heading-font {
-          font-family: 'Crimson Pro', serif;
-        }
-
+        body { font-family: 'DM Sans', sans-serif; }
+        .heading-font { font-family: 'Crimson Pro', serif; }
         @keyframes fadeSlideIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(24px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-
-        .animate-fade-in {
-          animation: fadeSlideIn 0.6s ease-out forwards;
-        }
+        .animate-fade-in { animation: fadeSlideIn 0.7s ease-out forwards; }
+        .animate-fade-in-delay { animation: fadeSlideIn 0.7s ease-out 0.15s forwards; opacity: 0; }
+        .animate-fade-in-delay-2 { animation: fadeSlideIn 0.7s ease-out 0.3s forwards; opacity: 0; }
       `}</style>
 
-      <div className="max-w-md w-full animate-fade-in">
-        {/* Header */}
-        <div className="text-center mb-10">
-          <div className="inline-block mb-6 relative">
-            <div className="absolute inset-0 bg-slate-500/10 blur-2xl rounded-full"></div>
-            <svg className="w-16 h-16 relative" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="32" cy="32" r="30" fill="#f8fafc" stroke="#64748b" strokeWidth="2"/>
-              <circle cx="32" cy="24" r="8" fill="#64748b"/>
-              <path d="M16 48C16 40 22 36 32 36C42 36 48 40 48 48" stroke="#64748b" strokeWidth="3" strokeLinecap="round"/>
-            </svg>
+      {/* ── Hero ── */}
+      <section className="relative min-h-[90vh] flex items-center justify-center bg-gradient-to-br from-slate-50 via-stone-50 to-zinc-100 overflow-hidden pt-16">
+        {/* background blobs */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-rose-100/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-slate-200/40 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="relative max-w-4xl mx-auto px-6 text-center">
+          {/* Eyebrow pill */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-sm text-slate-600 mb-8 animate-fade-in">
+            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            Your personal skincare companion
           </div>
-          <h1 className="heading-font text-4xl font-light text-slate-900 mb-2 tracking-tight">
-            Sign In
+
+          {/* Headline */}
+          <h1 className="heading-font text-6xl md:text-7xl font-light text-slate-900 leading-tight tracking-tight mb-6 animate-fade-in-delay">
+            Know your skin.<br />
+            <span className="text-slate-500">Love your glow.</span>
           </h1>
-          <p className="text-slate-600">Sign in to manage your account</p>
+
+          {/* Subheadline */}
+          <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed animate-fade-in-delay-2">
+            mySkiin helps you track your skincare routine, discover the right products, and get AI-powered guidance — all in one place. Available on iOS and Android.
+          </p>
+
+          {/* Store badges */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-delay-2">
+            <AppStoreBadge />
+            <PlayStoreBadge />
+          </div>
+
+          {/* Small reassurance line */}
+          <p className="mt-5 text-sm text-slate-400 animate-fade-in-delay-2">
+            Free to download · Available worldwide
+          </p>
         </div>
+      </section>
 
-        {/* Main Card */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-900/5 border border-slate-200/60 overflow-hidden">
-          <div className="p-8">
-            {/* Error Message */}
-            {error && (
-              <div className="mb-6 bg-red-50 border border-red-200 rounded-xl p-4">
-                <div className="flex gap-3">
-                  <svg className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  <p className="text-sm text-red-800">{error}</p>
-                </div>
-              </div>
-            )}
+      {/* ── Features ── */}
+      <section className="bg-white py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="heading-font text-4xl md:text-5xl font-light text-slate-900 mb-4 tracking-tight">
+              Everything your skin needs
+            </h2>
+            <p className="text-slate-500 max-w-xl mx-auto text-lg">
+              Simple, thoughtful tools designed to help you build a skincare routine that actually works.
+            </p>
+          </div>
 
-            {/* Google Sign In */}
-            <button
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-xl border-2 border-slate-200 bg-white text-slate-700 font-medium hover:bg-slate-50 hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 mb-6"
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              Continue with Google
-            </button>
-
-            {/* Divider */}
-            <div className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white text-slate-500">Or continue with email</span>
-              </div>
-            </div>
-
-            {/* Email/Password Form */}
-            <form onSubmit={handleEmailSignIn} className="space-y-5">
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-slate-700">
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-slate-400 focus:ring-4 focus:ring-slate-400/10 outline-none transition-all duration-200"
-                  placeholder="you@example.com"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-slate-700">
-                  Password
-                </label>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-slate-400 focus:ring-4 focus:ring-slate-400/10 outline-none transition-all duration-200"
-                  placeholder="••••••••"
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="rounded border-slate-300 text-slate-600 focus:ring-slate-400" />
-                  <span className="text-slate-600">Remember me</span>
-                </label>
-                <a href="#" className="text-slate-700 hover:text-slate-900 font-medium hover:underline">
-                  Forgot password?
-                </a>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full px-6 py-3.5 rounded-xl bg-slate-900 text-white font-medium hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-slate-900/25 hover:shadow-xl hover:shadow-slate-900/30 transition-all duration-200"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {features.map((feature, i) => (
+              <div
+                key={i}
+                className="group p-6 rounded-2xl border border-slate-100 hover:border-slate-200 hover:shadow-lg hover:shadow-slate-900/5 transition-all duration-300 bg-white"
               >
-                {loading ? 'Signing in...' : 'Sign in'}
-              </button>
-            </form>
-
-        
+                <div className="w-12 h-12 rounded-xl bg-slate-50 group-hover:bg-slate-100 flex items-center justify-center text-slate-600 mb-5 transition-colors">
+                  {feature.icon}
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-2 text-base">{feature.title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
           </div>
         </div>
+      </section>
 
-        {/* Warning Message for Delete Account */}
-        {redirect === '/delete-account' && (
-          <div className="mt-6 bg-amber-50 border border-amber-200/60 rounded-xl p-4">
-            <div className="flex gap-3">
-              <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-              <p className="text-sm text-amber-800">
-                You need to sign in before you can delete your account.
-              </p>
-            </div>
+      {/* ── How it works ── */}
+      <section className="bg-gradient-to-br from-slate-50 via-stone-50 to-zinc-100 py-24 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="heading-font text-4xl md:text-5xl font-light text-slate-900 mb-4 tracking-tight">
+              How mySkiin works
+            </h2>
+            <p className="text-slate-500 max-w-xl mx-auto text-lg">
+              Getting started is simple. Your better skin journey is just a few steps away.
+            </p>
           </div>
-        )}
-      </div>
-    </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              { step: '01', title: 'Download the app', desc: 'Get mySkiin free from the App Store or Google Play and create your account in seconds.' },
+              { step: '02', title: 'Build your routine', desc: 'Log the products you use daily, note how your skin feels, and chat with our AI assistant.' },
+              { step: '03', title: 'See the difference', desc: 'Over time, mySkiin surfaces patterns and insights to help you refine what works for your skin.' },
+            ].map(({ step, title, desc }) => (
+              <div key={step} className="relative text-center">
+                <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center mx-auto mb-5">
+                  <span className="heading-font text-xl font-semibold text-slate-400">{step}</span>
+                </div>
+                <h3 className="font-semibold text-slate-900 mb-2">{title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Download CTA banner ── */}
+      <section id="download" className="bg-slate-900 py-20 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <h2 className="heading-font text-4xl md:text-5xl font-light text-white mb-4 tracking-tight">
+            Ready to start your journey?
+          </h2>
+          <p className="text-slate-400 mb-10 text-lg max-w-xl mx-auto">
+            Download mySkiin for free and take the guesswork out of skincare.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <AppStoreBadge className="!bg-white !text-slate-900 hover:!bg-slate-100 [&_p]:!text-slate-500 [&_p:last-child]:!text-slate-900 shadow-white/10" />
+            <PlayStoreBadge className="!bg-white !text-slate-900 hover:!bg-slate-100 shadow-white/10" />
+          </div>
+          <p className="mt-6 text-slate-500 text-sm">
+            Already have an account?{' '}
+            <Link href="/login" className="text-slate-300 hover:text-white underline underline-offset-2 transition-colors">
+              Sign in to manage your account
+            </Link>
+          </p>
+        </div>
+      </section>
+    </>
   );
 }
