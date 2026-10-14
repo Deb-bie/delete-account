@@ -43,7 +43,7 @@ export default function Footer() {
                 <Link href="/privacy" className="text-sm text-slate-500 hover:text-slate-800 transition-colors">Privacy Policy</Link>
               </li>
               <li>
-                <Link href="/terms" className="text-sm text-slate-500 hover:text-slate-800 transition-colors">Terms & Conditions</Link>
+                <Link href="/terms" className="text-sm text-slate-500 hover:text-slate-800 transition-colors">Terms of Service</Link>
               </li>
               <li>
                 <Link href="/delete-account" className="text-sm text-slate-500 hover:text-slate-800 transition-colors">Delete My Account</Link>

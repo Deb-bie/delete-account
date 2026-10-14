@@ -3,9 +3,10 @@
 import { useState } from 'react';
 
 export default function ContactPage() {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '', company: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -13,11 +14,30 @@ export default function ContactPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
-    // Placeholder: integrate with email/form service
-    await new Promise((res) => setTimeout(res, 1000));
-    setSubmitted(true);
-    setLoading(false);
+    setError('');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setError(data.error || 'Something went wrong. Please try again.');
+        return;
+      }
+
+      setSubmitted(true);
+      setForm({ name: '', email: '', subject: '', message: '', company: '' });
+    } catch {
+      setError('Couldn’t reach the server. Check your connection and try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,7 +59,7 @@ export default function ContactPage() {
           <div className="text-center mb-12">
             <h1 className="heading-font text-5xl font-light text-slate-900 tracking-tight mb-4">Contact & Support</h1>
             <p className="text-slate-600 text-lg max-w-xl mx-auto leading-relaxed">
-              Have a question, feedback, or need help with your account? We'd love to hear from you.
+              Have a question, feedback, or need help with your account? We’d love to hear from you.
             </p>
           </div>
 
@@ -52,7 +72,7 @@ export default function ContactPage() {
                   </svg>
                 ),
                 label: 'General enquiries',
-                value: 'hello@myskiin.com',
+                value: 'tryskincare.ai@gmail.com',
               },
               {
                 icon: (
@@ -61,7 +81,7 @@ export default function ContactPage() {
                   </svg>
                 ),
                 label: 'Privacy & data',
-                value: 'privacy@myskiin.com',
+                value: 'tryskincare.ai@gmail.com',
               },
               {
                 icon: (
@@ -70,7 +90,7 @@ export default function ContactPage() {
                   </svg>
                 ),
                 label: 'Technical support',
-                value: 'support@myskiin.com',
+                value: 'tryskincare.ai@gmail.com',
               },
             ].map(({ icon, label, value }) => (
               <div key={label} className="bg-white rounded-xl border border-slate-200/60 p-5 flex items-start gap-4">
@@ -95,7 +115,7 @@ export default function ContactPage() {
                   </svg>
                 </div>
                 <h2 className="heading-font text-2xl font-semibold text-slate-900 mb-2">Message sent!</h2>
-                <p className="text-slate-600">Thanks for reaching out. We'll get back to you as soon as possible.</p>
+                <p className="text-slate-600">Thanks for reaching out. We’ll get back to you as soon as possible.</p>
               </div>
             ) : (
               <>
@@ -109,6 +129,7 @@ export default function ContactPage() {
                         name="name"
                         type="text"
                         required
+                        maxLength={100}
                         value={form.name}
                         onChange={handleChange}
                         className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-slate-400 focus:ring-4 focus:ring-slate-400/10 outline-none transition-all duration-200 text-sm"
@@ -122,6 +143,7 @@ export default function ContactPage() {
                         name="email"
                         type="email"
                         required
+                        maxLength={200}
                         value={form.email}
                         onChange={handleChange}
                         className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-slate-400 focus:ring-4 focus:ring-slate-400/10 outline-none transition-all duration-200 text-sm"
@@ -155,6 +177,8 @@ export default function ContactPage() {
                       id="message"
                       name="message"
                       required
+                      minLength={10}
+                      maxLength={5000}
                       rows={5}
                       value={form.message}
                       onChange={handleChange}
@@ -162,6 +186,26 @@ export default function ContactPage() {
                       placeholder="Tell us how we can help..."
                     />
                   </div>
+
+                  {/* Honeypot: hidden from people, bots tend to fill it in */}
+                  <div aria-hidden="true" className="absolute -left-[10000px] w-px h-px overflow-hidden">
+                    <label htmlFor="company">Company</label>
+                    <input
+                      id="company"
+                      name="company"
+                      type="text"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={form.company}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  {error && (
+                    <p role="alert" className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                      {error}
+                    </p>
+                  )}
 
                   <button
                     type="submit"
